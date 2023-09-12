@@ -1,36 +1,40 @@
+use std::cmp::Ordering;
+
 use rand::Rng;
 
 fn main() {
-    let mut life: i32 = 3;
+    let mut life: i32 = 10;
     println!("Guess the hidden number!");
     let hidden_number: u32 = rand::thread_rng().gen_range(1..101);
-    let mut chosen_number: u32 = 0;
 
-    while chosen_number != hidden_number {
+    loop {
+        println!("You have {} lives left!", life);
         if life <= 0 {
-            break;
+            println!("Game over! The hidden number was {}", hidden_number);
+            return;
         }
+        let mut chosen_number: String = String::new();
         println!("Enter a number!");
-        let mut s: String = String::new();
         std::io::stdin()
-            .read_line(&mut s)
+            .read_line(&mut chosen_number)
             .expect("Can't read user input");
-        chosen_number = s.trim().parse().expect("Not a valid number!");
-        if chosen_number < hidden_number {
-            println!("The hidden number is bigger than {}", chosen_number);
-            if life > 0 {
+        let chosen_number: u32 = match chosen_number.trim().parse() {
+            Ok(num) => num,
+            Err(_) => continue,
+        };
+        match hidden_number.cmp(&chosen_number) {
+            Ordering::Less => {
+                println!("The hidden number is smaller than {}", chosen_number);
                 life -= 1;
             }
-        } else if chosen_number > hidden_number {
-            println!("The hidden number is smaller than {}", chosen_number);
-            if life > 0 {
+            Ordering::Greater => {
+                println!("The hidden number is greater than {}", chosen_number);
                 life -= 1;
             }
-        }
+            Ordering::Equal => {
+                println!("Correct guess, the hidden number was {}", chosen_number);
+                break;
+            }
+        };
     }
-
-    if life <= 0 {
-        println!("Game over! The hidden number was {}", hidden_number)
-    }
-    println!("You found the hidden number that was {}!", hidden_number);
 }
